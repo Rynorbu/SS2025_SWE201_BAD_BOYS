@@ -42,7 +42,7 @@ export default function Auth() {
           leftIcon={{ type: 'font-awesome', name: 'envelope' }}
           onChangeText={(text) => setEmail(text)}
           value={email}
-          placeholder="email@address.com"
+          placeholder="email"
           autoCapitalize={'none'}
         />
       </View>

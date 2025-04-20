@@ -4,6 +4,7 @@ import { supabase } from './lib/supabase'
 import Auth from './components/Auth'
 import { View, Text } from 'react-native'
 import { Session } from '@supabase/supabase-js'
+import LoginScreen from './components/otp'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -20,8 +21,7 @@ export default function App() {
 
   return (
     <View>
-      <Auth />
-      {session && session.user && <Text>{session.user.id}</Text>}
+        <LoginScreen/>
     </View>
   )
 }
