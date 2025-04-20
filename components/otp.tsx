@@ -86,9 +86,6 @@ export default function LoginScreen() {
         <Text style={styles.buttonText}>{otpSent ? 'Login' : 'Send OTP'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity>
-        <Text style={styles.link}>Forgot Password?</Text>
-      </TouchableOpacity>
 
       {/* Uncomment to add a sign-up option */}
       {/* 
