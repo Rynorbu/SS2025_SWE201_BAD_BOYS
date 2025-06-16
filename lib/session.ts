@@ -69,8 +69,6 @@ export const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreWN3bWtjcG5pbW5jZnhvdmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxNjM4NTEsImV4cCI6MjA1OTczOTg1MX0.Hxf-7jpMNqHXI2Lz3Aw6k42B5SRxfM0HPzW__lcIyh0",
   {
     auth: {
-      // Set the redirect URL for magic links
-      redirectTo: "http://localhost:8081/store/callback", 
       autoRefreshToken: true,
       persistSession: true,
     },

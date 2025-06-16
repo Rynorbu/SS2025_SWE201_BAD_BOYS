@@ -9,6 +9,7 @@ import { PropertyCard } from "../../components/propertycard"
 import { AddPropertyModal } from "../../components/addpropertymodal"
 import { SearchBar } from "../../components/searchbar"
 import { FilterTabs } from "../../components/filtertab"
+import { Ionicons } from '@expo/vector-icons'
 
 interface Property {
   id: string
@@ -191,15 +192,17 @@ export default function Dashboard() {
               <PropertyCard 
                 key={property.id} 
                 property={{
-                  ...property,
-                  // Map database fields to component expected fields
+                  id: Number(property.id),
+                  title: property.title,
+                  location: property.location,
+                  price: property.price,
                   bedrooms: property.room,
                   bathrooms: property.bathroom,
+                  area: 0, // We removed area from schema
+                  type: 'Property', // Since we removed type from schema
                   image: property.image_url,
                   isAvailable: property.status === 'available',
-                  type: 'Property', // Since we removed type from schema
                   rating: 0, // You might want to add rating to your schema later
-                  area: 0, // We removed area from schema
                 }} 
               />
             ))

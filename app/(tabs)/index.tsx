@@ -82,7 +82,11 @@ export default function Index() {
         }
       } catch (error) {
         console.error(" Initial load error:", error)
-        setDebugInfo(`Error: ${error.message}`)
+        if (error instanceof Error) {
+          setDebugInfo(`Error: ${error.message}`)
+        } else {
+          setDebugInfo("An unknown error occurred")
+        }
         router.replace("/login")
       } finally {
         setTimeout(() => setChecking(false), 2000)

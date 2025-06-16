@@ -1,6 +1,7 @@
 "use client"
 
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native"
+import { useRouter } from "expo-router"
 
 interface DashboardHeaderProps {
   user: any
@@ -8,6 +9,12 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ user, onLogout }: DashboardHeaderProps) {
+  const router = useRouter()
+
+  const handleProfileClick = () => {
+    router.push("/profile")
+  }
+
   return (
     <View style={styles.header}>
       <View style={styles.headerContent}>
@@ -15,9 +22,16 @@ export function DashboardHeader({ user, onLogout }: DashboardHeaderProps) {
           <Text style={styles.appName}>House-Renting</Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
         </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity style={styles.profileButton} onPress={handleProfileClick}>
+            <Text style={styles.profileText}>Profile</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   )
@@ -44,6 +58,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#E3F2FD",
     marginTop: 2,
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profileButton: {
+    backgroundColor: "rgba(255,255,255,0.3)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  profileText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
   },
   logoutButton: {
     backgroundColor: "rgba(255,255,255,0.2)",

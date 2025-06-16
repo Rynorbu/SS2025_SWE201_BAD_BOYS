@@ -50,7 +50,7 @@ export default function AuthCallback() {
         }
       } catch (err) {
         console.error("💥 Callback processing error:", err)
-        setDebugInfo(`Error: ${err.message}`)
+        setDebugInfo(`Error: ${err instanceof Error ? err.message : String(err)}`)
         setTimeout(() => router.replace("/login"), 3000)
       }
     }

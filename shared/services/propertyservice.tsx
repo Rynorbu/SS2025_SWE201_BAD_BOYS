@@ -37,6 +37,9 @@ export async function addProperty(propertyData: PropertyData) {
     return { success: true, data }
   } catch (error) {
     console.error('Error adding property:', error)
-    return { success: false, error: error.message }
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error) 
+    }
   }
 }
