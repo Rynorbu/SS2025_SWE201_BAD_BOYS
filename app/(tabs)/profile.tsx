@@ -189,23 +189,24 @@ export default function Dashboard() {
             </View>
           ) : (
             filteredProperties.map((property) => (
-              <PropertyCard 
-                key={property.id} 
-                property={{
-                  id: Number(property.id),
-                  title: property.title,
-                  location: property.location,
-                  price: property.price,
-                  bedrooms: property.room,
-                  bathrooms: property.bathroom,
-                  area: 0, // We removed area from schema
-                  type: 'Property', // Since we removed type from schema
-                  image: property.image_url,
-                  isAvailable: property.status === 'available',
-                  rating: 0, // You might want to add rating to your schema later
-                }} 
-              />
-            ))
+              <View key={property.id} style={{ marginBottom: 20 }}>
+                <PropertyCard 
+                  property={{
+                    id: Number(property.id),
+                    title: property.title,
+                    location: property.location,
+                    price: property.price,
+                    bedrooms: property.room,
+                    bathrooms: property.bathroom,
+                    area: 0,
+                    type: 'Property',
+                    image: property.image_url,
+                    isAvailable: property.status === 'available',
+                    rating: 0,
+                  }} 
+                />
+                </View>
+              ))
           )}
         </View>
       </ScrollView>
@@ -288,6 +289,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   propertiesSection: {
+    marginTop: 20,
+    paddingHorizontal: 16,
     marginBottom: 20,
   },
   sectionTitle: {

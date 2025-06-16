@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import {
   Platform,
 } from "react-native"
 import * as ImagePicker from "expo-image-picker"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 interface AddPropertyModalProps {
   visible: boolean
@@ -22,16 +23,59 @@ interface AddPropertyModalProps {
   onAdd: (property: any) => void
 }
 
+const STORAGE_KEY = "@property_form_data"
+
 export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalProps) {
   const [formData, setFormData] = useState({
     title: "",
     location: "",
     price: "",
-    room: "",
-    bathroom: "",
+    room: "1",
+    bathroom: "1",
     description: "",
     image_url: "",
   })
+
+  useEffect(() => {
+    if (visible) {
+      loadFormData()
+    }
+  }, [visible])
+
+  const loadFormData = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(STORAGE_KEY)
+      if (savedData) {
+        setFormData(JSON.parse(savedData))
+      }
+    } catch (e) {
+      console.error("Failed to load form data", e)
+    }
+  }
+
+  const saveFormData = async (newFormData: typeof formData) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newFormData))
+    } catch (e) {
+      console.error("Failed to save form data", e)
+    }
+  }
+
+  const handleChange = (key: keyof typeof formData, value: string) => {
+    const updatedForm = { ...formData, [key]: value }
+    setFormData(updatedForm)
+    saveFormData(updatedForm)
+  }
+
+  const increment = (key: "room" | "bathroom") => {
+    const newValue = String(Math.max(1, Number(formData[key]) + 1))
+    handleChange(key, newValue)
+  }
+
+  const decrement = (key: "room" | "bathroom") => {
+    const newValue = String(Math.max(1, Number(formData[key]) - 1))
+    handleChange(key, newValue)
+  }
 
   const handleSubmit = () => {
     if (!formData.title || !formData.location || !formData.price) {
@@ -42,20 +86,22 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
     const newProperty = {
       ...formData,
       price: Number.parseInt(formData.price),
-      room: Number.parseInt(formData.room) || 1,
-      bathroom: Number.parseInt(formData.bathroom) || 1,
+      room: Number.parseInt(formData.room),
+      bathroom: Number.parseInt(formData.bathroom),
     }
 
     onAdd(newProperty)
+
     setFormData({
       title: "",
       location: "",
       price: "",
-      room: "",
-      bathroom: "",
+      room: "1",
+      bathroom: "1",
       description: "",
       image_url: "",
     })
+    AsyncStorage.removeItem(STORAGE_KEY)
   }
 
   const pickImage = async () => {
@@ -73,7 +119,7 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
     })
 
     if (!result.canceled) {
-      setFormData({ ...formData, image_url: result.assets[0].uri })
+      handleChange("image_url", result.assets[0].uri)
     }
   }
 
@@ -92,70 +138,75 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
             showsVerticalScrollIndicator={false}
           >
             {/* Basic Info */}
-            <View style={[styles.section, styles.spacedSection]}>
+            <View style={styles.section}>
               <Text style={styles.sectionTitle}>Basic Information</Text>
 
               <Text style={styles.label}>Title</Text>
               <TextInput
                 style={styles.input}
                 value={formData.title}
-                onChangeText={(text) => setFormData({ ...formData, title: text })}
+                onChangeText={(text) => handleChange("title", text)}
               />
 
               <Text style={styles.label}>Location</Text>
               <TextInput
                 style={styles.input}
                 value={formData.location}
-                onChangeText={(text) => setFormData({ ...formData, location: text })}
+                onChangeText={(text) => handleChange("location", text)}
               />
 
               <Text style={styles.label}>Monthly Rent (Nu)</Text>
               <TextInput
                 style={styles.input}
                 value={formData.price}
-                onChangeText={(text) => setFormData({ ...formData, price: text })}
+                onChangeText={(text) => handleChange("price", text)}
                 keyboardType="numeric"
               />
             </View>
 
-            {/* Property Details */}
-            <View style={[styles.section, styles.spacedSection]}>
+            {/* Room & Bathroom */}
+            <View style={styles.section}>
               <View style={styles.row}>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>Room</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.room}
-                    onChangeText={(text) => setFormData({ ...formData, room: text })}
-                    keyboardType="numeric"
-                  />
+                <Text style={styles.label}>Rooms</Text>
+                <View style={styles.counter}>
+                  <TouchableOpacity onPress={() => decrement("room")} style={styles.counterBtn}>
+                    <Text style={styles.counterText}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.counterValue}>{formData.room}</Text>
+                  <TouchableOpacity onPress={() => increment("room")} style={styles.counterBtn}>
+                    <Text style={styles.counterText}>+</Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.halfInput}>
-                  <Text style={styles.label}>Bathroom</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formData.bathroom}
-                    onChangeText={(text) => setFormData({ ...formData, bathroom: text })}
-                    keyboardType="numeric"
-                  />
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.label}>Bathrooms</Text>
+                <View style={styles.counter}>
+                  <TouchableOpacity onPress={() => decrement("bathroom")} style={styles.counterBtn}>
+                    <Text style={styles.counterText}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.counterValue}>{formData.bathroom}</Text>
+                  <TouchableOpacity onPress={() => increment("bathroom")} style={styles.counterBtn}>
+                    <Text style={styles.counterText}>+</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
 
             {/* Description */}
-            <View style={[styles.section, styles.spacedSection]}>
+            <View style={styles.section}>
               <Text style={styles.sectionTitle}>Description</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
                 value={formData.description}
-                onChangeText={(text) => setFormData({ ...formData, description: text })}
+                onChangeText={(text) => handleChange("description", text)}
                 multiline
                 numberOfLines={4}
               />
             </View>
 
             {/* Image Upload */}
-            <View style={[styles.section, styles.spacedSection]}>
+            <View style={styles.section}>
               <Text style={styles.sectionTitle}>Image</Text>
               {formData.image_url ? (
                 <Image source={{ uri: formData.image_url }} style={styles.imagePreview} />
@@ -170,8 +221,8 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
             </View>
           </ScrollView>
 
-          {/* Bottom Buttons */}
-          <View style={[styles.buttonContainer, styles.spacedButtonContainer]}>
+          {/* Buttons */}
+          <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
@@ -188,7 +239,7 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#f9f9f9",
   },
   titleTop: {
     fontSize: 20,
@@ -205,10 +256,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   section: {
-    // Removed marginBottom here to use spacedSection for controlled spacing
-  },
-  spacedSection: {
-    marginBottom: 32, // Added space between each main section
+    marginBottom: 28,
   },
   sectionTitle: {
     fontSize: 18,
@@ -224,7 +272,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: "#fff",
-    padding: 16,
+    padding: 14,
     borderRadius: 12,
     fontSize: 16,
     borderWidth: 1,
@@ -238,9 +286,34 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
   },
-  halfInput: {
-    flex: 0.48,
+  counter: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+  },
+  counterBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  counterText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#007AFF",
+  },
+  counterValue: {
+    marginHorizontal: 8,
+    fontSize: 18,
+    minWidth: 24,
+    textAlign: "center",
+    fontWeight: "600",
+    color: "#333",
   },
   buttonContainer: {
     flexDirection: "row",
@@ -249,9 +322,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#E0E0E0",
-  },
-  spacedButtonContainer: {
-    marginTop: 16, // extra space above buttons for breathing room
   },
   cancelBtn: {
     backgroundColor: "#ccc",
