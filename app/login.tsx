@@ -1,74 +1,19 @@
-// // app/login.tsx
-// import 'react-native-url-polyfill/auto';
-// import { useState } from 'react';
-// import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
-// import { createClient } from '@supabase/supabase-js';
-// import { useRouter } from 'expo-router';
-
-// // Supabase credentials from your app.json or .env file
-// const supabase = createClient(
-//   'https://jkycwmkcpnimncfxovkl.supabase.co',
-//   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpreWN3bWtjcG5pbW5jZnhvdmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxNjM4NTEsImV4cCI6MjA1OTczOTg1MX0.Hxf-7jpMNqHXI2Lz3Aw6k42B5SRxfM0HPzW__lcIyh0'
-// );
-
-// export default function LoginScreen() {
-//   const [email, setEmail] = useState('');
-//   const router = useRouter();
-
-//   const handleMagicLinkLogin = async () => {
-//     const { error } = await supabase.auth.signInWithOtp({
-//       email,
-//     });
-
-//     if (error) {
-//       Alert.alert('Error', error.message);
-//     } else {
-//       Alert.alert('Check your email', 'Magic link sent!');
-//     }
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Magic Link Login</Text>
-//       <TextInput
-//         placeholder="Enter your email"
-//         value={email}
-//         onChangeText={setEmail}
-//         style={styles.input}
-//         keyboardType="email-address"
-//         autoCapitalize="none"
-//       />
-//       <Button title="Send Magic Link" onPress={handleMagicLinkLogin} />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     padding: 24,
-//     backgroundColor: '#fff',
-//   },
-//   input: {
-//     borderColor: '#ccc',
-//     borderWidth: 1,
-//     padding: 12,
-//     marginBottom: 12,
-//     borderRadius: 8,
-//   },
-//   title: {
-//     fontSize: 24,
-//     marginBottom: 20,
-//     textAlign: 'center',
-//   },
-// });
-
 "use client"
 
 import "react-native-url-polyfill/auto"
 import { useState } from "react"
-import { View, TextInput, Button, Alert, StyleSheet, Text } from "react-native"
+import {
+  View,
+  TextInput,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  ImageBackground,
+  Dimensions,
+} from "react-native"
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5"
 import { supabase } from "../lib/session"
 
 export default function LoginScreen() {
@@ -84,27 +29,20 @@ export default function LoginScreen() {
     setLoading(true)
 
     try {
-      // Use the current origin as redirect (back to index)
       const redirectUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:8081"
-
-      console.log("🔗 Sending magic link with redirect:", redirectUrl)
-
-      const { data, error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: redirectUrl, // Redirect back to index.tsx
+          emailRedirectTo: redirectUrl,
         },
       })
 
       if (error) {
-        console.error("❌ Magic link error:", error)
         Alert.alert("Error", error.message)
       } else {
-        console.log("✅ Magic link sent")
         Alert.alert("Check your email", `We sent a magic link to ${email}. Click the link in your email to sign in.`)
       }
     } catch (err) {
-      console.error("💥 Unexpected error:", err)
       Alert.alert("Error", "Something went wrong. Please try again.")
     } finally {
       setLoading(false)
@@ -113,60 +51,103 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Magic Link Login</Text>
-      <TextInput
-        placeholder="Enter your email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        editable={!loading}
-      />
-      <Button title={loading ? "Sending..." : "Send Magic Link"} onPress={handleMagicLinkLogin} disabled={loading} />
+      <ImageBackground
+        source={require("../assets/images/login-hotel.jpg")}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay}>
+          <View style={styles.card}>
+            <View style={styles.logoContainer}>
+              <FontAwesome5 name="home" size={40} color="#4A90E2" />
+            </View>
 
-      <View style={styles.debugContainer}>
-        <Text style={styles.debugTitle}>Debug Info:</Text>
-        <Text style={styles.debugText}>
-          Redirect URL: {typeof window !== "undefined" ? window.location.origin : "http://localhost:8081"}
-        </Text>
-      </View>
+            <Text style={styles.title}>Login with Magic Link</Text>
+
+            <TextInput
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={!loading}
+            />
+
+            <TouchableOpacity style={styles.button} onPress={handleMagicLinkLogin} disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Send Magic Link</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ImageBackground>
     </View>
   )
 }
 
+const { width, height } = Dimensions.get("window")
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  background: {
+    ...StyleSheet.absoluteFillObject,
+    width,
+    height,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     justifyContent: "center",
-    padding: 24,
+    alignItems: "center",
+    padding: 20,
+  },
+  card: {
     backgroundColor: "#fff",
+    width: "100%",
+    maxWidth: 400,
+    padding: 24,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4,
+    alignItems: "center",
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 20,
+    textAlign: "center",
   },
   input: {
     borderColor: "#ccc",
     borderWidth: 1,
-    padding: 12,
-    marginBottom: 12,
     borderRadius: 8,
+    padding: 12,
+    width: "100%",
+    backgroundColor: "#FAFAFA",
+    marginBottom: 16,
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    textAlign: "center",
+  button: {
+    backgroundColor: "#4A90E2",
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "100%",
   },
-  debugContainer: {
-    marginTop: 20,
-    padding: 10,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 5,
-  },
-  debugTitle: {
-    fontSize: 14,
+  buttonText: {
+    color: "#fff",
     fontWeight: "bold",
-    marginBottom: 5,
-  },
-  debugText: {
-    fontSize: 12,
-    color: "#666",
+    fontSize: 16,
   },
 })

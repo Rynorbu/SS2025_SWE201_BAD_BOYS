@@ -92,7 +92,7 @@ export function DashboardView({
               <View key={property.id} style={{ marginBottom: 20 }}>
                 <PropertyCard
                   property={{
-                    id: Number(property.id),
+                    id: String(property.id),
                     title: property.title,
                     location: property.location,
                     price: property.price,
