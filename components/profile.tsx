@@ -18,6 +18,7 @@ export function DashboardView({
   onAddProperty,
   showAddModal,
   setShowAddModal,
+  onDeleteProperty, // Receive the onDeleteProperty callback
 }: any) {
   const filteredProperties = properties.filter((property: any) => {
     const matchesSearch =
@@ -104,6 +105,7 @@ export function DashboardView({
                     isAvailable: property.status === "available",
                     rating: 0,
                   }}
+                  onDelete={onDeleteProperty} // Pass the delete handler
                 />
               </View>
             ))

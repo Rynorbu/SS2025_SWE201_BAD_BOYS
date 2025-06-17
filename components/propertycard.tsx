@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Alert } from "react-native"
 import { PropertyService } from "../shared/services/propertyservice"
+import { MaterialIcons } from "@expo/vector-icons"
 
 interface PropertyCardProps {
   property: {
@@ -19,9 +20,10 @@ interface PropertyCardProps {
     rating: number
   }
   onPress?: (property: any) => void
+  onDelete?: (id: string) => void
 }
 
-export function PropertyCard({ property, onPress }: PropertyCardProps) {
+export function PropertyCard({ property, onPress, onDelete }: PropertyCardProps) {
   const screenWidth = Dimensions.get("window").width
   const isDesktop = screenWidth >= 1024
   const [isAvailable, setIsAvailable] = useState(property.isAvailable)
@@ -33,6 +35,16 @@ export function PropertyCard({ property, onPress }: PropertyCardProps) {
       setIsAvailable(false)
     } else {
       Alert.alert("Error", result.error || "Could not book property.")
+    }
+  }
+
+  const handleDelete = async () => {
+    const result = await PropertyService.deleteProperty(property.id)
+    if (result.success) {
+      Alert.alert("Success", "Property deleted successfully!")
+      if (onDelete) onDelete(property.id) // Notify parent component
+    } else {
+      Alert.alert("Error", result.error || "Could not delete property.")
     }
   }
 
@@ -52,11 +64,15 @@ export function PropertyCard({ property, onPress }: PropertyCardProps) {
           <Text style={[styles.title, isDesktop && styles.desktopTitle]} numberOfLines={2}>
             {property.title}
           </Text>
-          <View style={[styles.statusBadge, isAvailable ? styles.available : styles.rented]}>
-            <Text style={[styles.statusText, isAvailable ? styles.availableText : styles.rentedText]}>
-              {isAvailable ? "Available" : "Rented"}
-            </Text>
-          </View>
+          <TouchableOpacity onPress={handleDelete} style={styles.deleteIconContainer}>
+            <MaterialIcons name="delete" size={22} color="#D32F2F" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.statusBadge, isAvailable ? styles.available : styles.rented]}>
+          <Text style={[styles.statusText, isAvailable ? styles.availableText : styles.rentedText]}>
+            {isAvailable ? "Available" : "Rented"}
+          </Text>
         </View>
 
         <Text style={[styles.location, isDesktop && styles.desktopLocation]} numberOfLines={1}>
@@ -66,10 +82,10 @@ export function PropertyCard({ property, onPress }: PropertyCardProps) {
 
         <View style={styles.details}>
           <Text style={[styles.detailItem, isDesktop && styles.desktopDetailItem]}>
-            🛏️ {property.bedrooms} {property.bedrooms === 1 ? 'bed' : 'beds'}
+            🛏️ {property.bedrooms} {property.bedrooms === 1 ? "bed" : "beds"}
           </Text>
           <Text style={[styles.detailItem, isDesktop && styles.desktopDetailItem]}>
-            🚿 {property.bathrooms} {property.bathrooms === 1 ? 'bath' : 'baths'}
+            🚿 {property.bathrooms} {property.bathrooms === 1 ? "bath" : "baths"}
           </Text>
         </View>
 
@@ -126,7 +142,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 8,
   },
   title: {
@@ -134,16 +150,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
     flex: 1,
-    marginRight: 8,
   },
   desktopTitle: {
     fontSize: 18,
     marginBottom: 4,
   },
+  deleteIconContainer: {
+    marginLeft: 8,
+    padding: 4,
+  },
   statusBadge: {
+    alignSelf: "flex-start",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    marginBottom: 8,
   },
   available: {
     backgroundColor: "#E8F5E8",

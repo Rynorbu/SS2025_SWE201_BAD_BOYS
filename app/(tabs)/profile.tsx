@@ -84,6 +84,25 @@ export default function DashboardContainer() {
     }
   }
 
+  const handleDeleteProperty = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("houses")
+        .delete()
+        .eq("id", id)
+
+      if (error) {
+        Alert.alert("Error", "Failed to delete property")
+        return
+      }
+
+      setProperties(prev => prev.filter(property => property.id !== id))
+      Alert.alert("Success", "Property deleted successfully!")
+    } catch {
+      Alert.alert("Error", "Something went wrong")
+    }
+  }
+
   return (
     <DashboardView
       user={user}
@@ -95,6 +114,7 @@ export default function DashboardContainer() {
       setActiveFilter={setActiveFilter}
       onLogout={handleLogout}
       onAddProperty={handleAddProperty}
+      onDeleteProperty={handleDeleteProperty}
       showAddModal={showAddModal}
       setShowAddModal={setShowAddModal}
     />
