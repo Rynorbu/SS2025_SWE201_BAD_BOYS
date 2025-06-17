@@ -2,7 +2,7 @@
 
 import React from "react"
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from "react-native"
-import { MaterialIcons } from "@expo/vector-icons"
+import { Ionicons } from "@expo/vector-icons"
 
 interface PropertyDetailsProps {
   property: {
@@ -17,115 +17,187 @@ interface PropertyDetailsProps {
     image: string
     isAvailable: boolean
     rating: number
-    description: string // Added description field
+    description: string
   }
   onClose: () => void
 }
 
 export function PropertyDetails({ property, onClose }: PropertyDetailsProps) {
   return (
-    <ScrollView style={styles.container}>
-      <Image source={{ uri: property.image }} style={styles.image} />
-
-      <View style={styles.content}>
-        <Text style={styles.title}>{property.title}</Text>
-        <Text style={styles.location}>📍 {property.location}</Text>
-        <Text style={styles.price}>${property.price}/month</Text>
-
-        <View style={styles.detailsRow}>
-          <Text style={styles.detailItem}>🛏️ {property.bedrooms} Bedrooms</Text>
-          <Text style={styles.detailItem}>🚿 {property.bathrooms} Bathrooms</Text>
+    <View style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Image with overlay */}
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: property.image }} style={styles.image} />
+          <View style={styles.imageOverlay}>
+            <TouchableOpacity onPress={onClose} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={[styles.statusChip, property.isAvailable ? styles.availableChip : styles.rentedChip]}>
+              <Text style={styles.statusChipText}>
+                {property.isAvailable ? "Available" : "Rented"}
+              </Text>
+            </View>
+          </View>
         </View>
 
-        <Text style={styles.detailItem}>📐 {property.area} sq ft</Text>
-        <Text style={styles.detailItem}>🏠 Type: {property.type}</Text>
-        <Text style={styles.detailItem}>⭐ Rating: {property.rating}</Text>
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Main Info */}
+          <View style={styles.mainInfo}>
+            <Text style={styles.title}>{property.title}</Text>
+            <View style={styles.locationRow}>
+              <Ionicons name="location" size={16} color="#666" />
+              <Text style={styles.location}>{property.location}</Text>
+            </View>
+            <Text style={styles.price}>Nu {property.price.toLocaleString()}</Text>
+            <Text style={styles.priceLabel}>per month</Text>
+          </View>
 
-        <View style={[styles.statusBadge, property.isAvailable ? styles.available : styles.rented]}>
-          <Text style={styles.statusText}>{property.isAvailable ? "Available" : "Rented"}</Text>
+          {/* Features */}
+          <View style={styles.featuresContainer}>
+            <View style={styles.featureBox}>
+              <Ionicons name="bed" size={24} color="#007AFF" />
+              <Text style={styles.featureNumber}>{property.bedrooms}</Text>
+              <Text style={styles.featureLabel}>Bedrooms</Text>
+            </View>
+            <View style={styles.featureBox}>
+              <Ionicons name="water" size={24} color="#007AFF" />
+              <Text style={styles.featureNumber}>{property.bathrooms}</Text>
+              <Text style={styles.featureLabel}>Bathrooms</Text>
+            </View>
+            <View style={styles.featureBox}>
+              <Ionicons name="resize" size={24} color="#007AFF" />
+              <Text style={styles.featureNumber}>{property.area}</Text>
+              <Text style={styles.featureLabel}>sq ft</Text>
+            </View>
+          </View>
+
+          {/* Description */}
+          {property.description && (
+            <View style={styles.descriptionContainer}>
+              <Text style={styles.sectionTitle}>About this property</Text>
+              <Text style={styles.description}>{property.description}</Text>
+            </View>
+          )}
         </View>
-
-        {/* Added property description */}
-        <Text style={styles.description}>{property.description}</Text>
-
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <MaterialIcons name="close" size={24} color="#fff" />
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#fff",
+  },
+  imageContainer: {
+    position: "relative",
   },
   image: {
     width: "100%",
     height: 300,
     backgroundColor: "#f0f0f0",
   },
+  imageOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    padding: 20,
+    paddingTop: 50,
+  },
+  backButton: {
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 20,
+    padding: 8,
+  },
+  statusChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+  },
+  availableChip: {
+    backgroundColor: "#34C759",
+  },
+  rentedChip: {
+    backgroundColor: "#FF3B30",
+  },
+  statusChipText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
   content: {
-    padding: 16,
+    padding: 20,
+  },
+  mainInfo: {
+    marginBottom: 24,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "700",
-    color: "#333",
+    color: "#1a1a1a",
     marginBottom: 8,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
   },
   location: {
     fontSize: 16,
     color: "#666",
-    marginBottom: 8,
+    marginLeft: 4,
   },
   price: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#007AFF",
+    marginBottom: 2,
+  },
+  priceLabel: {
+    fontSize: 14,
+    color: "#999",
+  },
+  featuresContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+  },
+  featureBox: {
+    alignItems: "center",
+  },
+  featureNumber: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  featureLabel: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+  },
+  descriptionContainer: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#007AFF",
-    marginBottom: 16,
-  },
-  detailsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  detailItem: {
-    fontSize: 16,
-    color: "#444",
-    marginBottom: 8,
-  },
-  statusBadge: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-    marginTop: 16,
-  },
-  available: {
-    backgroundColor: "#d4edda",
-  },
-  rented: {
-    backgroundColor: "#f8d7da",
-  },
-  statusText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#155724",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    backgroundColor: "#007AFF",
-    borderRadius: 20,
-    padding: 8,
+    color: "#1a1a1a",
+    marginBottom: 12,
   },
   description: {
     fontSize: 16,
-    color: "#333",
-    marginTop: 16,
+    color: "#444",
     lineHeight: 24,
   },
 })
