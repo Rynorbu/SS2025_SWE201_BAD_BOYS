@@ -73,6 +73,13 @@ export default function Dashboard() {
     await PropertyBusinessLogic.refreshProperties()
   }
 
+  const handleDeleteProperty = (propertyId: string) => {
+    usePropertyStore.setState((state) => ({
+      properties: state.properties.filter((p) => p.id !== propertyId),
+      filteredProperties: state.filteredProperties.filter((p) => p.id !== propertyId),
+    }));
+  };
+
   const availableCount = properties.filter(p => p.status === "available").length
   const rentedCount = properties.filter(p => p.status === "booked").length
 
@@ -84,6 +91,7 @@ export default function Dashboard() {
       <PropertyCard
         property={propertyWithStringId}
         onPress={handlePropertyPress}
+        onDelete={handleDeleteProperty}
       />
     )
   }
