@@ -17,7 +17,6 @@ import {
 } from "react-native"
 import * as ImagePicker from "expo-image-picker"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import { Ionicons } from "@expo/vector-icons"
 
 interface AddPropertyModalProps {
   visible: boolean
@@ -81,7 +80,7 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
 
   const handleSubmit = () => {
     if (!formData.title || !formData.location || !formData.price) {
-      Alert.alert("Missing Information", "Please fill in all required fields")
+      Alert.alert("Error", "Please fill in all required fields")
       return
     }
 
@@ -109,7 +108,7 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (status !== "granted") {
-      Alert.alert("Permission denied", "We need permission to access your media library.")
+      Alert.alert("Permission needed", "Please allow access to your photos.")
       return
     }
 
@@ -127,150 +126,115 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <View style={styles.container}>
-            <View style={styles.header}>
-              <Text style={styles.titleTop}>Add New Property</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <Ionicons name="close" size={24} color="#333" />
-              </TouchableOpacity>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Add Property</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Text style={styles.closeText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
+            {/* Image */}
+            <TouchableOpacity onPress={pickImage} style={styles.imageSection}>
+              {formData.image_url ? (
+                <Image source={{ uri: formData.image_url }} style={styles.image} />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Text style={styles.imageText}>📷 Add Photo</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Basic Info */}
+            <View style={styles.section}>
+              <Text style={styles.label}>Title *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.title}
+                onChangeText={(text) => handleChange("title", text)}
+                placeholder="Property title"
+              />
+
+              <Text style={styles.label}>Location *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.location}
+                onChangeText={(text) => handleChange("location", text)}
+                placeholder="City, Area"
+              />
+
+              <Text style={styles.label}>Monthly Rent (Nu) *</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.price}
+                onChangeText={(text) => handleChange("price", text)}
+                keyboardType="numeric"
+                placeholder="eg. 15000"
+              />
             </View>
 
-            <ScrollView
-              style={styles.form}
-              contentContainerStyle={{ paddingBottom: 120 }}
-              showsVerticalScrollIndicator={false}
-            >
-              {/* Image Upload - Moved to top for better UX */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Property Image</Text>
-                <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
-                  {formData.image_url ? (
-                    <Image source={{ uri: formData.image_url }} style={styles.imagePreview} />
-                  ) : (
-                    <View style={styles.placeholderBox}>
-                      <Ionicons name="camera" size={40} color="#999" />
-                      <Text style={styles.placeholderText}>Tap to select an image</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              </View>
-
-              {/* Basic Info */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Basic Information</Text>
-
-                <Text style={styles.label}>
-                  Title <Text style={styles.required}>*</Text>
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.title}
-                  onChangeText={(text) => handleChange("title", text)}
-                  placeholder="e.g. Modern Apartment in City Center"
-                  placeholderTextColor="#999"
-                />
-
-                <Text style={styles.label}>
-                  Location <Text style={styles.required}>*</Text>
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.location}
-                  onChangeText={(text) => handleChange("location", text)}
-                  placeholder="e.g. Thimphu, Bhutan"
-                  placeholderTextColor="#999"
-                />
-
-                <Text style={styles.label}>
-                  Monthly Rent (Nu) <Text style={styles.required}>*</Text>
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.price}
-                  onChangeText={(text) => handleChange("price", text)}
-                  keyboardType="numeric"
-                  placeholder="e.g. 15000"
-                  placeholderTextColor="#999"
-                />
-              </View>
-
-              {/* Room & Bathroom */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Property Details</Text>
-                <View style={styles.detailsCard}>
-                  <View style={styles.row}>
-                    <View style={styles.labelContainer}>
-                      <Ionicons name="bed-outline" size={20} color="#555" />
-                      <Text style={styles.detailLabel}>Bedrooms</Text>
-                    </View>
-                    <View style={styles.counter}>
-                      <TouchableOpacity onPress={() => decrement("room")} style={styles.counterBtn}>
-                        <Ionicons name="remove" size={20} color="#007AFF" />
-                      </TouchableOpacity>
-                      <Text style={styles.counterValue}>{formData.room}</Text>
-                      <TouchableOpacity onPress={() => increment("room")} style={styles.counterBtn}>
-                        <Ionicons name="add" size={20} color="#007AFF" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View style={styles.divider} />
-
-                  <View style={styles.row}>
-                    <View style={styles.labelContainer}>
-                      <Ionicons name="water-outline" size={20} color="#555" />
-                      <Text style={styles.detailLabel}>Bathrooms</Text>
-                    </View>
-                    <View style={styles.counter}>
-                      <TouchableOpacity onPress={() => decrement("bathroom")} style={styles.counterBtn}>
-                        <Ionicons name="remove" size={20} color="#007AFF" />
-                      </TouchableOpacity>
-                      <Text style={styles.counterValue}>{formData.bathroom}</Text>
-                      <TouchableOpacity onPress={() => increment("bathroom")} style={styles.counterBtn}>
-                        <Ionicons name="add" size={20} color="#007AFF" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+            {/* Rooms & Bathrooms */}
+            <View style={styles.section}>
+              <View style={styles.row}>
+                <Text style={styles.label}>Bedrooms</Text>
+                <View style={styles.counter}>
+                  <TouchableOpacity onPress={() => decrement("room")} style={styles.counterBtn}>
+                    <Text style={styles.counterText}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.counterValue}>{formData.room}</Text>
+                  <TouchableOpacity onPress={() => increment("room")} style={styles.counterBtn}>
+                    <Text style={styles.counterText}>+</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Description */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Description</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={formData.description}
-                  onChangeText={(text) => handleChange("description", text)}
-                  multiline
-                  numberOfLines={6}
-                  placeholder="Describe your property, including amenities, nearby facilities, etc."
-                  placeholderTextColor="#999"
-                  textAlignVertical="top"
-                />
+              <View style={styles.row}>
+                <Text style={styles.label}>Bathrooms</Text>
+                <View style={styles.counter}>
+                  <TouchableOpacity onPress={() => decrement("bathroom")} style={styles.counterBtn}>
+                    <Text style={styles.counterText}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.counterValue}>{formData.bathroom}</Text>
+                  <TouchableOpacity onPress={() => increment("bathroom")} style={styles.counterBtn}>
+                    <Text style={styles.counterText}>+</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </ScrollView>
-
-            {/* Buttons */}
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[
-                  styles.uploadBtn, 
-                  (!formData.title || !formData.location || !formData.price) && styles.disabledBtn
-                ]} 
-                onPress={handleSubmit}
-                disabled={!formData.title || !formData.location || !formData.price}
-              >
-                <Text style={styles.uploadText}>Upload Property</Text>
-              </TouchableOpacity>
             </View>
+
+            {/* Description */}
+            <View style={styles.section}>
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.description}
+                onChangeText={(text) => handleChange("description", text)}
+                multiline
+                numberOfLines={4}
+                placeholder="Describe your property..."
+                textAlignVertical="top"
+              />
+            </View>
+          </ScrollView>
+
+          {/* Submit Button */}
+          <View style={styles.footer}>
+            <TouchableOpacity 
+              style={[
+                styles.submitBtn, 
+                (!formData.title || !formData.location || !formData.price) && styles.disabledBtn
+              ]} 
+              onPress={handleSubmit}
+              disabled={!formData.title || !formData.location || !formData.price}
+            >
+              <Text style={styles.submitText}>Add Property</Text>
+            </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -279,46 +243,56 @@ export function AddPropertyModal({ visible, onClose, onAdd }: AddPropertyModalPr
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === "android" ? 50 : 10,
-    paddingBottom: 16,
-    backgroundColor: "#fff",
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    borderBottomColor: "#eee",
   },
-  closeButton: {
-    padding: 8,
-  },
-  titleTop: {
-    fontSize: 20,
-    fontWeight: "700",
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
     color: "#333",
+  },
+  closeText: {
+    fontSize: 16,
+    color: "#007AFF",
   },
   form: {
     flex: 1,
-    paddingHorizontal: 16,
+    padding: 16,
+  },
+  imageSection: {
+    marginBottom: 20,
+  },
+  image: {
+    width: "100%",
+    height: 180,
+    borderRadius: 8,
+  },
+  imagePlaceholder: {
+    width: "100%",
+    height: 180,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#ddd",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
+  },
+  imageText: {
+    fontSize: 16,
+    color: "#666",
   },
   section: {
-    marginTop: 24,
-    marginBottom: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
@@ -326,125 +300,67 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 8,
   },
-  required: {
-    color: "#FF3B30",
-  },
   input: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: "#f9f9f9",
+    padding: 12,
+    borderRadius: 8,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
     marginBottom: 16,
-    color: "#333",
+    borderWidth: 1,
+    borderColor: "#eee",
   },
   textArea: {
-    height: 120,
+    height: 80,
     textAlignVertical: "top",
-  },
-  detailsCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    overflow: "hidden",
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
-  },
-  labelContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  detailLabel: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#333",
-    marginLeft: 8,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#E0E0E0",
+    marginBottom: 16,
   },
   counter: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#f9f9f9",
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#eee",
   },
   counterBtn: {
-    padding: 10,
+    padding: 12,
+    minWidth: 44,
     alignItems: "center",
-    justifyContent: "center",
   },
-  counterValue: {
-    width: 40,
-    textAlign: "center",
+  counterText: {
     fontSize: 18,
     fontWeight: "600",
+    color: "#007AFF",
+  },
+  counterValue: {
+    fontSize: 16,
+    fontWeight: "600",
     color: "#333",
+    minWidth: 30,
+    textAlign: "center",
   },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  footer: {
     padding: 16,
-    backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderTopColor: "#E0E0E0",
+    borderTopColor: "#eee",
   },
-  cancelBtn: {
-    backgroundColor: "#F2F2F2",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    flex: 1,
-    marginRight: 8,
-    alignItems: "center",
-  },
-  uploadBtn: {
+  submitBtn: {
     backgroundColor: "#007AFF",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    flex: 2,
+    padding: 16,
+    borderRadius: 8,
     alignItems: "center",
   },
   disabledBtn: {
-    backgroundColor: "#A0C8FF",
+    backgroundColor: "#ccc",
   },
-  cancelText: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  uploadText: {
+  submitText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-  },
-  imagePreview: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    backgroundColor: "#f0f0f0",
-  },
-  placeholderBox: {
-    height: 200,
-    borderRadius: 12,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderStyle: "dashed",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f8f8f8",
-  },
-  placeholderText: {
-    marginTop: 8,
-    color: "#999",
-    fontSize: 14,
   },
 })

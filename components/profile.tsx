@@ -1,10 +1,11 @@
 import React from "react"
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native"
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native"
 import { DashboardHeader } from "./dashboardheader"
 import { PropertyCard } from "./propertycard"
 import { AddPropertyModal } from "./addpropertymodal"
 import { SearchBar } from "./searchbar"
 import { FilterTabs } from "./filtertab"
+import { Ionicons } from "@expo/vector-icons"
 
 export function DashboardView({
   user,
@@ -18,7 +19,7 @@ export function DashboardView({
   onAddProperty,
   showAddModal,
   setShowAddModal,
-  onDeleteProperty, // Receive the onDeleteProperty callback
+  onDeleteProperty,
 }: any) {
   const filteredProperties = properties.filter((property: any) => {
     const matchesSearch =
@@ -40,7 +41,8 @@ export function DashboardView({
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <Text>Loading properties...</Text>
+        <ActivityIndicator size="large" color="#667eea" />
+        <Text style={styles.loadingText}>Loading properties...</Text>
       </View>
     )
   }
@@ -50,15 +52,19 @@ export function DashboardView({
       <DashboardHeader user={user} onLogout={onLogout} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>Welcome back, {user?.email?.split("@")[0]}!</Text>
-          <Text style={styles.subtitle}>Manage your rental properties</Text>
+          <Text style={styles.welcomeText}>
+            Hello, {user?.email?.split("@")[0]}! 👋
+          </Text>
+          <Text style={styles.subtitle}>Manage your properties</Text>
         </View>
 
+        {/* Stats Cards */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>{properties.length}</Text>
-            <Text style={styles.statLabel}>Total Properties</Text>
+            <Text style={styles.statLabel}>Total</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>{availableCount}</Text>
@@ -70,27 +76,49 @@ export function DashboardView({
           </View>
         </View>
 
+        {/* Search and Filter */}
         <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
         <FilterTabs activeFilter={activeFilter} onFilterChange={setActiveFilter} />
 
-        <TouchableOpacity style={styles.addButton} onPress={() => setShowAddModal(true)}>
-          <Text style={styles.addButtonText}>+ Add New Property</Text>
+        {/* Add Property Button */}
+        <TouchableOpacity 
+          style={styles.addButton} 
+          onPress={() => setShowAddModal(true)}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="add-circle" size={20} color="#fff" />
+          <Text style={styles.addButtonText}>Add Property</Text>
         </TouchableOpacity>
 
+        {/* Properties List */}
         <View style={styles.propertiesSection}>
-          <Text style={styles.sectionTitle}>Your Properties ({filteredProperties.length})</Text>
+          <Text style={styles.sectionTitle}>
+            Properties ({filteredProperties.length})
+          </Text>
+          
           {filteredProperties.length === 0 ? (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No properties found</Text>
+              <Ionicons name="home-outline" size={60} color="#ccc" />
+              <Text style={styles.emptyText}>
+                {properties.length === 0 ? "No properties yet" : "No properties found"}
+              </Text>
               <Text style={styles.emptySubtext}>
                 {properties.length === 0
                   ? "Add your first property to get started"
-                  : "Try adjusting your search or filter"}
+                  : "Try different search terms or filters"}
               </Text>
+              {properties.length === 0 && (
+                <TouchableOpacity 
+                  style={styles.emptyButton}
+                  onPress={() => setShowAddModal(true)}
+                >
+                  <Text style={styles.emptyButtonText}>Add First Property</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             filteredProperties.map((property: any) => (
-              <View key={property.id} style={{ marginBottom: 20 }}>
+              <View key={property.id} style={styles.propertyItem}>
                 <PropertyCard
                   property={{
                     id: String(property.id),
@@ -105,7 +133,7 @@ export function DashboardView({
                     isAvailable: property.status === "available",
                     rating: 0,
                   }}
-                  onDelete={onDeleteProperty} // Pass the delete handler
+                  onDelete={onDeleteProperty}
                 />
               </View>
             ))
@@ -131,17 +159,23 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#666",
+    fontWeight: "500",
+  },
   content: {
     flex: 1,
     padding: 16,
   },
   welcomeSection: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   welcomeText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#1a1a1a",
     marginBottom: 4,
   },
   subtitle: {
@@ -151,7 +185,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   statCard: {
     backgroundColor: "#fff",
@@ -163,59 +197,89 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 3,
   },
   statNumber: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#007AFF",
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#667eea",
+    marginTop: 8,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
     color: "#666",
-    textAlign: "center",
+    fontWeight: "500",
   },
   addButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#667eea",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 16,
     borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 24,
+    shadowColor: "#667eea",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   addButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    marginLeft: 8,
   },
   propertiesSection: {
-    marginTop: 20,
-    paddingHorizontal: 16,
-    marginBottom: 20,
+    marginBottom: 40,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
-    marginBottom: 12,
+    color: "#1a1a1a",
+    marginBottom: 16,
+  },
+  propertyItem: {
+    marginBottom: 16,
   },
   emptyState: {
     backgroundColor: "#fff",
-    padding: 32,
-    borderRadius: 12,
+    padding: 40,
+    borderRadius: 16,
     alignItems: "center",
     marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   emptyText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: "#1a1a1a",
+    marginTop: 16,
     marginBottom: 8,
+    textAlign: "center",
   },
   emptySubtext: {
     fontSize: 14,
     color: "#666",
     textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  emptyButton: {
+    backgroundColor: "#667eea",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  emptyButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 })

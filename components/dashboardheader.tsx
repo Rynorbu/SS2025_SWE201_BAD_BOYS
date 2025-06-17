@@ -1,9 +1,19 @@
 "use client"
 
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Pressable } from "react-native"
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Modal, 
+  Pressable,
+  SafeAreaView,
+  Platform
+} from "react-native"
 import { useRouter } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
+import { LinearGradient } from "expo-linear-gradient"
 
 interface DashboardHeaderProps {
   user: any
@@ -21,103 +31,178 @@ export function DashboardHeader({ user, onLogout }: DashboardHeaderProps) {
 
   const handleLogoutClick = () => {
     setShowDropdown(false)
-    onLogout() // call parent prop function
+    onLogout()
+  }
+
+  const getUserDisplayName = () => {
+    if (user?.email) {
+      const namePart = user.email.split("@")[0]
+      return namePart.charAt(0).toUpperCase() + namePart.slice(1)
+    }
+    return "User"
   }
 
   return (
-    <View style={styles.header}>
-      <View style={styles.headerContent}>
-        <View>
-          <Text style={styles.appName}>🏠 HouseRent</Text>
-          <Text style={styles.userEmail}>{user?.email}</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <LinearGradient
+        colors={['#667eea', '#764ba2']}
+        style={styles.header}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.headerContent}>
+          {/* App branding and user info */}
+          <View style={styles.brandContainer}>
+            <Text style={styles.appName}>🏠 HouseRent</Text>
+            <Text style={styles.userGreeting}>Hello, {getUserDisplayName()}!</Text>
+          </View>
+
+          {/* Clear Menu Button */}
+          <TouchableOpacity 
+            style={styles.menuButton}
+            onPress={() => setShowDropdown(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="menu" size={24} color="#fff" />
+            <Text style={styles.menuText}>Menu</Text>
+          </TouchableOpacity>
         </View>
+      </LinearGradient>
 
-        <TouchableOpacity onPress={() => setShowDropdown(true)}>
-          <Ionicons name="ellipsis-vertical" size={24} color="#007AFF" />
-        </TouchableOpacity>
-      </View>
-
+      {/* Dropdown Modal */}
       <Modal
         visible={showDropdown}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setShowDropdown(false)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowDropdown(false)}>
           <View style={styles.dropdown}>
-            <TouchableOpacity onPress={handleProfileClick} style={styles.dropdownItem}>
-              <Ionicons name="person-outline" size={16} color="#007AFF" />
-              <Text style={styles.dropdownText}>Profile</Text>
+            {/* User Info Section */}
+            <View style={styles.dropdownHeader}>
+              <Text style={styles.dropdownTitle}>Account Menu</Text>
+              <Text style={styles.dropdownSubtitle}>{user?.email}</Text>
+            </View>
+
+            <View style={styles.dropdownDivider} />
+
+            {/* Menu Items */}
+
+            <TouchableOpacity onPress={() => { setShowDropdown(false); router.push('/home'); }} style={styles.dropdownItem}>
+              <Ionicons name="home-outline" size={22} color="#667eea" />
+              <Text style={styles.dropdownText}>Home</Text>
+              <Ionicons name="chevron-forward" size={18} color="#ccc" />
             </TouchableOpacity>
+
+
+            <TouchableOpacity onPress={handleProfileClick} style={styles.dropdownItem}>
+              <Ionicons name="person-outline" size={22} color="#667eea" />
+              <Text style={styles.dropdownText}>My Profile</Text>
+              <Ionicons name="chevron-forward" size={18} color="#ccc" />
+            </TouchableOpacity>
+
             <TouchableOpacity onPress={handleLogoutClick} style={styles.dropdownItem}>
-              <Ionicons name="log-out-outline" size={16} color="#d32f2f" />
-              <Text style={[styles.dropdownText, { color: "#d32f2f" }]}>Logout</Text>
+              <Ionicons name="log-out-outline" size={22} color="#e74c3c" />
+              <Text style={[styles.dropdownText, { color: "#e74c3c" }]}>Logout</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
-    </View>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: "#667eea",
+  },
   header: {
-    backgroundColor: "#fff",
-    paddingTop: 50,
+    paddingTop: Platform.OS === "android" ? 50 : 10,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
   },
   headerContent: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
+  brandContainer: {
+    flex: 1,
+  },
   appName: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#007AFF",
+    fontWeight: "700",
+    color: "#ffffff",
+    marginBottom: 4,
   },
-  userEmail: {
+  userGreeting: {
     fontSize: 14,
-    color: "#555",
-    marginTop: 4,
+    color: "rgba(255,255,255,0.9)",
+    fontWeight: "500",
+  },
+  menuButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.3)",
+  },
+  menuText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 6,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: "flex-start",
-    alignItems: "flex-end",
-    paddingTop: 90,
-    paddingRight: 20,
-    backgroundColor: "rgba(0,0,0,0.1)",
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   dropdown: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingVertical: 6,
-    width: 150,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+  },
+  dropdownHeader: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  dropdownTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#1a1a1a",
+    marginBottom: 4,
+  },
+  dropdownSubtitle: {
+    fontSize: 14,
+    color: "#666",
+  },
+  dropdownDivider: {
+    height: 1,
+    backgroundColor: "#f0f0f0",
+    marginBottom: 8,
   },
   dropdownItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
   dropdownText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: "#007AFF",
+    flex: 1,
+    fontSize: 16,
+    color: "#1a1a1a",
+    fontWeight: "500",
+    marginLeft: 12,
   },
 })

@@ -5,7 +5,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
   Image,
   FlatList,
   RefreshControl,
@@ -20,11 +19,9 @@ import { PropertyCard } from "../components/propertycard"
 import { usePropertyStore } from "../shared/store/propertyStore"
 import { PropertyBusinessLogic } from "../shared/services/businessLayer"
 import { PropertyUtils } from "../shared/utils/propertyUtils"
-import { FilterTabs } from "../components/filtertab"
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
-  const [screenWidth, setScreenWidth] = useState(Dimensions.get("window").width)
   const router = useRouter()
 
   const {
@@ -47,12 +44,6 @@ export default function Dashboard() {
 
     getUser()
     PropertyBusinessLogic.loadProperties()
-
-    const subscription = Dimensions.addEventListener("change", ({ window }) => {
-      setScreenWidth(window.width)
-    })
-
-    return () => subscription?.remove()
   }, [])
 
   const handleLogout = async () => {
@@ -111,7 +102,7 @@ export default function Dashboard() {
 
   const renderLoadingState = () => (
     <View style={styles.loadingState}>
-      <ActivityIndicator size="large" color="#007AFF" />
+      <ActivityIndicator size="large" color="#667eea" />
       <Text style={styles.loadingText}>Loading properties...</Text>
     </View>
   )
@@ -148,7 +139,7 @@ export default function Dashboard() {
         </View>
       </View>
 
-      {/* Search & Filter */}
+      {/* Search */}
       <View style={styles.searchWrapper}>
         <SearchBar value={searchQuery} onChangeText={handleSearch} />
       </View>
@@ -172,8 +163,8 @@ export default function Dashboard() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
-                colors={['#007AFF']}
-                tintColor="#007AFF"
+                colors={['#667eea']}
+                tintColor="#667eea"
               />
             }
           />
@@ -196,18 +187,18 @@ const styles = StyleSheet.create({
   },
   welcomeSection: {
     marginTop: 20,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
     marginHorizontal: 16,
   },
   avatarImage: {
@@ -215,31 +206,27 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     marginRight: 16,
-    borderWidth: 2,
-    borderColor: "#007AFF",
   },
   welcomeTextWrapper: {
     flex: 1,
   },
   welcomeText: {
-    fontSize: 25,
-    fontWeight: "700",
-    color: "#222",
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#1a1a1a",
     marginBottom: 4,
   },
   brandHighlight: {
-    color: "#007AFF",
+    color: "#667eea",
   },
   subWelcomeText: {
-    fontSize: 17,
-    color: "#888",
-    fontStyle: "italic",
+    fontSize: 14,
+    color: "#666",
   },
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    marginTop: 10,
     marginBottom: 20,
   },
   statCard: {
@@ -256,14 +243,16 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   statNumber: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#007AFF",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#667eea",
+    marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
     color: "#666",
     textAlign: "center",
+    fontWeight: "500",
   },
   searchWrapper: {
     marginHorizontal: 16,
@@ -274,9 +263,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
     marginBottom: 16,
   },
   listContainer: {
@@ -286,11 +275,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginTop: 20,
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#1a1a1a',
     marginBottom: 8,
   },
   emptySubtitle: {
@@ -309,16 +301,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   errorContainer: {
-    backgroundColor: '#ffebee',
-    padding: 12,
+    backgroundColor: '#fdf2f2',
+    padding: 16,
     marginHorizontal: 16,
     marginBottom: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#f44336',
+    borderLeftColor: '#e74c3c',
   },
   errorText: {
-    color: '#c62828',
+    color: '#e74c3c',
     fontSize: 14,
     fontWeight: '500',
   },

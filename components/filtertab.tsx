@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 
 interface FilterTabsProps {
   activeFilter: string
@@ -10,11 +10,7 @@ export function FilterTabs({ activeFilter, onFilterChange }: FilterTabsProps) {
   const filters = ['All', 'Available', 'Rented', 'Pending']
 
   return (
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false} 
-      style={styles.container}
-    >
+    <View style={styles.container}>
       {filters.map((filter) => (
         <TouchableOpacity
           key={filter}
@@ -32,26 +28,27 @@ export function FilterTabs({ activeFilter, onFilterChange }: FilterTabsProps) {
           </Text>
         </TouchableOpacity>
       ))}
-    </ScrollView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
     marginBottom: 16,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    padding: 4,
   },
   filterButton: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
+    flex: 1,
     paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
   },
   activeFilter: {
     backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
   },
   filterText: {
     fontSize: 14,
@@ -60,5 +57,6 @@ const styles = StyleSheet.create({
   },
   activeFilterText: {
     color: '#fff',
+    fontWeight: '600',
   },
 })
