@@ -4,6 +4,7 @@ import { useState } from "react"
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, Alert } from "react-native"
 import { PropertyService } from "../shared/services/propertyservice"
 import { MaterialIcons } from "@expo/vector-icons"
+import { PropertyDetails } from "./propertydetails"
 
 interface PropertyCardProps {
   property: {
@@ -27,6 +28,7 @@ export function PropertyCard({ property, onPress, onDelete }: PropertyCardProps)
   const screenWidth = Dimensions.get("window").width
   const isDesktop = screenWidth >= 1024
   const [isAvailable, setIsAvailable] = useState(property.isAvailable)
+  const [showDetails, setShowDetails] = useState(false)
 
   const handleBookNow = async () => {
     const result = await PropertyService.bookProperty(property.id)
@@ -49,60 +51,70 @@ export function PropertyCard({ property, onPress, onDelete }: PropertyCardProps)
   }
 
   const handlePress = () => {
-    if (onPress) onPress(property)
+    setShowDetails(true)
+  }
+
+  const handleCloseDetails = () => {
+    setShowDetails(false)
   }
 
   return (
-    <TouchableOpacity
-      style={[styles.card, isDesktop && styles.desktopCard]}
-      onPress={handlePress}
-      activeOpacity={0.7}
-    >
-      <Image source={{ uri: property.image }} style={[styles.image, isDesktop && styles.desktopImage]} />
-      <View style={[styles.content, isDesktop && styles.desktopContent]}>
-        <View style={styles.header}>
-          <Text style={[styles.title, isDesktop && styles.desktopTitle]} numberOfLines={2}>
-            {property.title}
-          </Text>
-          <TouchableOpacity onPress={handleDelete} style={styles.deleteIconContainer}>
-            <MaterialIcons name="delete" size={22} color="#D32F2F" />
-          </TouchableOpacity>
-        </View>
+    <>
+      {showDetails ? (
+        <PropertyDetails property={property} onClose={handleCloseDetails} />
+      ) : (
+        <TouchableOpacity
+          style={[styles.card, isDesktop && styles.desktopCard]}
+          onPress={handlePress}
+          activeOpacity={0.7}
+        >
+          <Image source={{ uri: property.image }} style={[styles.image, isDesktop && styles.desktopImage]} />
+          <View style={[styles.content, isDesktop && styles.desktopContent]}>
+            <View style={styles.header}>
+              <Text style={[styles.title, isDesktop && styles.desktopTitle]} numberOfLines={2}>
+                {property.title}
+              </Text>
+              <TouchableOpacity onPress={handleDelete} style={styles.deleteIconContainer}>
+                <MaterialIcons name="delete" size={22} color="#D32F2F" />
+              </TouchableOpacity>
+            </View>
 
-        <View style={[styles.statusBadge, isAvailable ? styles.available : styles.rented]}>
-          <Text style={[styles.statusText, isAvailable ? styles.availableText : styles.rentedText]}>
-            {isAvailable ? "Available" : "Rented"}
-          </Text>
-        </View>
+            <View style={[styles.statusBadge, isAvailable ? styles.available : styles.rented]}>
+              <Text style={[styles.statusText, isAvailable ? styles.availableText : styles.rentedText]}>
+                {isAvailable ? "Available" : "Rented"}
+              </Text>
+            </View>
 
-        <Text style={[styles.location, isDesktop && styles.desktopLocation]} numberOfLines={1}>
-          📍 {property.location}
-        </Text>
-        <Text style={[styles.price, isDesktop && styles.desktopPrice]}>${property.price}/month</Text>
+            <Text style={[styles.location, isDesktop && styles.desktopLocation]} numberOfLines={1}>
+              📍 {property.location}
+            </Text>
+            <Text style={[styles.price, isDesktop && styles.desktopPrice]}>${property.price}/month</Text>
 
-        <View style={styles.details}>
-          <Text style={[styles.detailItem, isDesktop && styles.desktopDetailItem]}>
-            🛏️ {property.bedrooms} {property.bedrooms === 1 ? "bed" : "beds"}
-          </Text>
-          <Text style={[styles.detailItem, isDesktop && styles.desktopDetailItem]}>
-            🚿 {property.bathrooms} {property.bathrooms === 1 ? "bath" : "baths"}
-          </Text>
-        </View>
+            <View style={styles.details}>
+              <Text style={[styles.detailItem, isDesktop && styles.desktopDetailItem]}>
+                🛏️ {property.bedrooms} {property.bedrooms === 1 ? "bed" : "beds"}
+              </Text>
+              <Text style={[styles.detailItem, isDesktop && styles.desktopDetailItem]}>
+                🚿 {property.bathrooms} {property.bathrooms === 1 ? "bath" : "baths"}
+              </Text>
+            </View>
 
-        <View style={styles.footer}>
-          <Text style={[styles.type, isDesktop && styles.desktopType]}>{property.type}</Text>
-          {property.rating > 0 && (
-            <Text style={[styles.rating, isDesktop && styles.desktopRating]}>⭐ {property.rating}</Text>
-          )}
-        </View>
+            <View style={styles.footer}>
+              <Text style={[styles.type, isDesktop && styles.desktopType]}>{property.type}</Text>
+              {property.rating > 0 && (
+                <Text style={[styles.rating, isDesktop && styles.desktopRating]}>⭐ {property.rating}</Text>
+              )}
+            </View>
 
-        {isAvailable && (
-          <TouchableOpacity onPress={handleBookNow} style={styles.bookButton}>
-            <Text style={styles.bookButtonText}>Book Now</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </TouchableOpacity>
+            {isAvailable && (
+              <TouchableOpacity onPress={handleBookNow} style={styles.bookButton}>
+                <Text style={styles.bookButtonText}>Book Now</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </TouchableOpacity>
+      )}
+    </>
   )
 }
 
