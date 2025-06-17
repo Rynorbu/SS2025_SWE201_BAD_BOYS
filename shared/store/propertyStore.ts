@@ -144,8 +144,8 @@ export const usePropertyStore = create<PropertyState & PropertyActions>((set, ge
     }
 
     const filtered = properties.filter(property =>
-      property.title.toLowerCase().includes(query.toLowerCase()) ||
-      property.location.toLowerCase().includes(query.toLowerCase())
+      (property.title?.toLowerCase().includes(query.toLowerCase()) ||
+      property.location?.toLowerCase().includes(query.toLowerCase()))
     )
     set({ filteredProperties: filtered })
   },
