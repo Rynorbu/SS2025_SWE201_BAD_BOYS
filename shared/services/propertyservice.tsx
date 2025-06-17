@@ -10,26 +10,21 @@ export interface Property {
   bathroom: number
   image_url: string
   status: 'available' | 'pending' | 'booked'
+  // created_at: string
   owner_id: string
 }
 
-export interface PropertyData {
-  title: string
-  description: string
-  location: string
-  price: number
-  room: number
-  bathroom: number
-  image_url: string
-}
-
 export class PropertyService {
-  static async getAvailableProperties() {
+  /**
+   * Get all available properties
+   */
+  static async getAvailableProperties(): Promise<{ data: Property[] | null; error: any }> {
     try {
       const { data, error } = await supabase
         .from('houses')
         .select('*')
         .eq('status', 'available')
+        // .order('created_at', { ascending: false })
 
       return { data, error }
     } catch (error) {
@@ -38,15 +33,38 @@ export class PropertyService {
     }
   }
 
-  static async searchProperties(query: string) {
+  /**
+   * Get all properties (for stats)
+   */
+  static async getAllProperties(): Promise<{ data: Property[] | null; error: any }> {
     try {
-      if (!query.trim()) return this.getAvailableProperties()
+      const { data, error } = await supabase
+        .from('houses')
+        .select('*')
+        // .order('created_at', { ascending: false })
+
+      return { data, error }
+    } catch (error) {
+      console.error('Error fetching all properties:', error)
+      return { data: null, error }
+    }
+  }
+
+  /**
+   * Search properties by title or location
+   */
+  static async searchProperties(query: string): Promise<{ data: Property[] | null; error: any }> {
+    try {
+      if (!query.trim()) {
+        return this.getAvailableProperties()
+      }
 
       const { data, error } = await supabase
         .from('houses')
         .select('*')
         .eq('status', 'available')
         .or(`title.ilike.%${query}%,location.ilike.%${query}%`)
+        // .order('created_at', { ascending: false })
 
       return { data, error }
     } catch (error) {
@@ -55,7 +73,10 @@ export class PropertyService {
     }
   }
 
-  static async getPropertyById(id: string) {
+  /**
+   * Get property by ID
+   */
+  static async getPropertyById(id: string): Promise<{ data: Property | null; error: any }> {
     try {
       const { data, error } = await supabase
         .from('houses')
@@ -70,45 +91,21 @@ export class PropertyService {
     }
   }
 
-  static async addProperty(propertyData: PropertyData) {
+  /**
+   * Get properties by owner
+   */
+  static async getPropertiesByOwner(ownerId: string): Promise<{ data: Property[] | null; error: any }> {
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-
-      if (userError || !user) throw new Error('User not authenticated')
-
       const { data, error } = await supabase
         .from('houses')
-        .insert([{ ...propertyData, owner_id: user.id, status: 'available' }])
-        .select()
+        .select('*')
+        .eq('owner_id', ownerId)
+        // .order('created_at', { ascending: false })
 
-      if (error) throw error
-
-      return { success: true, data }
+      return { data, error }
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      }
-    }
-  }
-
-  static async bookProperty(id: string) {
-    try {
-      const { error } = await supabase
-        .from('houses')
-        .update({ status: 'booked' })
-        .eq('id', id)
-
-      if (error) throw error
-
-      return { success: true }
-    } catch (error) {
-      console.error('Error booking property:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      }
+      console.error('Error fetching properties by owner:', error)
+      return { data: null, error }
     }
   }
 }
-  

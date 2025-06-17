@@ -13,20 +13,24 @@ import {
   ScrollView,
 } from "react-native"
 import { useRouter } from "expo-router"
-import { supabase, clearSession } from "../lib/session"
 import { DashboardHeader } from "../components/dashboardheader"
 import { SearchBar } from "../components/searchbar"
 import { PropertyCard } from "../components/propertycard"
 import { usePropertyStore } from "../shared/store/propertyStore"
-import { PropertyBusinessLogic } from "../shared/services/businessLayer"
+import { useAuthStore } from "../shared/store/authStore"
+import { PropertyBusinessLogic } from "../shared/services/propertyBusinessLogic"
+import { AuthBusinessLogic } from "../shared/services/authBusinessLogic"
 import { PropertyUtils } from "../shared/utils/propertyUtils"
-import { FilterTabs } from "../components/filtertab"
+import { AuthService } from "../shared/services/authService"
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null)
   const [screenWidth, setScreenWidth] = useState(Dimensions.get("window").width)
   const router = useRouter()
 
+  // Auth store
+  const { user, setUser } = useAuthStore()
+
+  // Property store
   const {
     properties,
     filteredProperties,
@@ -34,18 +38,15 @@ export default function Dashboard() {
     error,
     searchQuery,
     refreshing,
-    setSearchQuery,
   } = usePropertyStore()
 
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+    const initializeUser = async () => {
+      const { user } = await AuthService.getCurrentUser()
       setUser(user)
     }
 
-    getUser()
+    initializeUser()
     PropertyBusinessLogic.loadProperties()
 
     const subscription = Dimensions.addEventListener("change", ({ window }) => {
@@ -56,9 +57,7 @@ export default function Dashboard() {
   }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    await clearSession()
-    router.replace("/login")
+    await AuthBusinessLogic.handleLogout(router)
   }
 
   const handleSearch = (query: string) => {
@@ -140,7 +139,7 @@ export default function Dashboard() {
         </View>
       </View>
 
-      {/* Search & Filter */}
+      {/* Search */}
       <View style={styles.searchWrapper}>
         <SearchBar value={searchQuery} onChangeText={handleSearch} />
       </View>
